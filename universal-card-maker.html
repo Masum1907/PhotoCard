@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Universal Card &amp; Banner Maker</title>
+<style>
+:root{--bg:#f2f4f9;--panel:#fff;--text:#1b2033;--muted:#667;--line:#dde0ea;--accent:#2f5bea}
+@media(prefers-color-scheme:dark){:root{--bg:#11131b;--panel:#1b1e2a;--text:#eef0f7;--muted:#9aa0b4;--line:#2d3142;--accent:#7aa2ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans Bengali','Kalpurush','Nirmala UI',sans-serif}
+header{padding:18px 24px 0}
+h1{margin:0;font-size:1.35rem}
+header p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+main{display:grid;grid-template-columns:minmax(310px,430px) 1fr;gap:20px;padding:18px 24px 30px;align-items:start}
+@media(max-width:860px){main{grid-template-columns:1fr}.stage{order:-1;position:static!important}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:0 0 12px;padding:6px 12px 12px}
+legend{font-weight:700;font-size:.82rem;padding:0 6px;color:var(--accent)}
+label{display:block;font-size:.8rem;color:var(--muted);margin:8px 0 3px}
+input[type=text],textarea,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:.92rem}
+textarea{resize:vertical;min-height:58px}
+input[type=file]{width:100%;font-size:.8rem;margin-top:6px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{width:auto;padding:8px 14px;border-radius:999px;background:var(--bg);color:var(--text);border:1px solid var(--line);font-weight:600;font-size:.85rem}
+.chip:hover{border-color:var(--accent);color:var(--accent);opacity:1}
+button{border:0;border-radius:10px;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer;padding:12px;width:100%}
+button:hover{opacity:.9}
+.person{border:1px dashed var(--line);border-radius:10px;padding:8px 10px 10px;margin-bottom:10px}
+.ph{display:flex;justify-content:space-between;align-items:center;font-size:.85rem}
+.x{width:auto;padding:2px 9px;background:transparent;color:#d33;border:1px solid var(--line);font-size:.8rem}
+.person input[type=text]{margin-top:6px}
+#add{background:var(--bg);color:var(--accent);border:1px dashed var(--accent)}
+.stage{position:sticky;top:14px;display:flex;flex-direction:column;gap:12px;align-items:center}
+canvas{width:100%;max-height:82vh;object-fit:contain;border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.28);background:#222}
+.stage button{max-width:520px}
+</style>
+</head>
+<body>
+<header>
+  <h1>✨ Universal Card &amp; Banner Maker</h1>
+  <p>Congratulation, Seminar, Event, Achievement — jekono dhoroner card/banner. 0 theke 4 jon porjonto manush.</p>
+</header>
+<main>
+<section class="panel">
+  <fieldset><legend>Quick Template</legend>
+    <div class="chips" id="presets">
+      <button class="chip" data-p="congrats">🎓 Congratulation</button>
+      <button class="chip" data-p="teacher">👩‍🏫 Teacher</button>
+      <button class="chip" data-p="seminar">🎤 Seminar</button>
+      <button class="chip" data-p="event">🎉 Event</button>
+      <button class="chip" data-p="achieve">🏆 Achievement</button>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>Design</legend>
+    <div class="row">
+      <div><label>Size</label>
+        <select id="size"><option value="sq">Square 1080×1080</option><option value="pt">Portrait 1080×1350</option><option value="wd">Banner 1920×1080</option></select></div>
+      <div><label>Theme</label>
+        <select id="theme"><option value="navy">Navy &amp; Gold</option><option value="green">Emerald</option><option value="purple">Royal Purple</option><option value="red">Crimson</option><option value="sunset">Sunset</option><option value="light">Ivory (Light)</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Decoration</label>
+        <select id="decor"><option value="confetti">Confetti</option><option value="bubbles">Bubbles</option><option value="none">Clean</option></select></div>
+      <div><label>Photo shape</label>
+        <select id="shape"><option value="circle">Circle</option><option value="square">Rounded square</option></select></div>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>People (photo + name)</legend>
+    <div id="people"></div>
+    <button id="add">＋ Add person</button>
+  </fieldset>
+
+  <fieldset><legend>Text</legend>
+    <label>Top label (e.g. Congratulations, Seminar)</label><input type="text" id="label">
+    <label>Main headline</label><input type="text" id="headline">
+    <label>Title / topic (optional)</label><textarea id="title"></textarea>
+    <label>Sub line (venue, conference, speaker type…)</label><input type="text" id="sub">
+    <div class="row">
+      <div><label>Date</label><input type="text" id="date"></div>
+      <div><label>Time</label><input type="text" id="time"></div>
+    </div>
+    <label>Venue</label><input type="text" id="venue">
+    <label>Extra line (supervisor, “All are welcome” …)</label><input type="text" id="extra">
+    <label>Organization / Department</label><input type="text" id="org">
+  </fieldset>
+</section>
+
+<section class="stage">
+  <canvas id="c" width="1080" height="1080"></canvas>
+  <button id="dl">⬇ Download PNG</button>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');
+const FONT="'Segoe UI','Noto Sans Bengali','Kalpurush','Nirmala UI',sans-serif";
+const SIZES={sq:[1080,1080],pt:[1080,1350],wd:[1920,1080]};
+const THEMES={
+ navy:{a:'#0a1a3c',b:'#21428c',gold:'#f5c451',text:'#fff',panel:'rgba(255,255,255,.12)',pill:'#0a1a3c',deco:'rgba(255,255,255,.06)',glow:'rgba(255,255,255,.14)'},
+ green:{a:'#04271f',b:'#118a66',gold:'#ffe08a',text:'#fff',panel:'rgba(255,255,255,.12)',pill:'#04271f',deco:'rgba(255,255,255,.06)',glow:'rgba(255,255,255,.14)'},
+ purple:{a:'#210d46',b:'#7240d0',gold:'#ffd166',text:'#fff',panel:'rgba(255,255,255,.12)',pill:'#210d46',deco:'rgba(255,255,255,.07)',glow:'rgba(255,255,255,.15)'},
+ red:{a:'#35091a',b:'#c02a45',gold:'#ffd98a',text:'#fff',panel:'rgba(255,255,255,.12)',pill:'#35091a',deco:'rgba(255,255,255,.07)',glow:'rgba(255,255,255,.15)'},
+ sunset:{a:'#2a0e3d',b:'#ee5a3a',gold:'#ffd36b',text:'#fff',panel:'rgba(255,255,255,.14)',pill:'#2a0e3d',deco:'rgba(255,255,255,.08)',glow:'rgba(255,255,255,.18)'},
+ light:{a:'#fffaf0',b:'#ecdfc2',gold:'#b7791f',text:'#1b2440',panel:'rgba(27,36,64,.07)',pill:'#ffffff',deco:'rgba(27,36,64,.06)',glow:'rgba(255,255,255,.6)'}
+};
+const D='Department of CSE, Khulna University';
+const PRESETS={
+ congrats:{theme:'navy',decor:'confetti',size:'sq',label:'Congratulations',headline:'Paper Accepted',title:'Write your paper title here',sub:'Accepted at Conference / Journal Name',date:'',time:'',venue:'',extra:'Supervisor: Dr. Name',org:D,
+  people:[['Student Name','CSE Student'],['Student Name','CSE Student']]},
+ teacher:{theme:'purple',decor:'confetti',size:'sq',label:'Congratulations',headline:'Best Teacher Award',title:'',sub:'Heartfelt congratulations on this great achievement',date:'',time:'',venue:'',extra:'',org:D,
+  people:[['Dr. Teacher Name','Professor, Dept. of CSE']]},
+ seminar:{theme:'green',decor:'bubbles',size:'pt',label:'Seminar',headline:'Seminar on Artificial Intelligence',title:'Topic: Write the seminar topic here',sub:'Guest Speaker',date:'25 November 2026',time:'10:00 AM',venue:'Seminar Room, CSE Building',extra:'All students and teachers are cordially invited',org:D,
+  people:[['Dr. Speaker Name','Professor, University Name']]},
+ event:{theme:'sunset',decor:'bubbles',size:'pt',label:"You're Invited",headline:'CSE Tech Fest 2026',title:'',sub:'Programming • Robotics • Project Showcase',date:'10 December 2026',time:'9:00 AM',venue:'University Auditorium',extra:'Free entry for all',org:D,people:[]},
+ achieve:{theme:'red',decor:'confetti',size:'sq',label:'Proud Moment',headline:'Champion – Programming Contest',title:'Team Name',sub:'Inter-University Programming Contest 2026',date:'',time:'',venue:'',extra:'',org:D,
+  people:[['Member One','CSE'],['Member Two','CSE'],['Member Three','CSE']]}
+};
+let people=[];
+const TXT=['label','headline','title','sub','date','time','venue','extra','org'];
+
+function applyPreset(k){
+  const p=PRESETS[k];
+  TXT.forEach(i=>$(i).value=p[i]);
+  ['theme','decor','size'].forEach(i=>$(i).value=p[i]);
+  people=p.people.map(([name,role])=>({name,role,img:null}));
+  renderPeople();draw();
+}
+function renderPeople(){
+  const box=$('people');box.innerHTML='';
+  people.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='person';
+    d.innerHTML='<div class="ph"><b>Person '+(i+1)+'</b><button class="x">Remove</button></div><input type="text" placeholder="Name"><input type="text" placeholder="Role / Designation"><input type="file" accept="image/*">';
+    const [n,r,f]=d.querySelectorAll('input');
+    n.value=p.name;r.value=p.role;
+    n.oninput=()=>{p.name=n.value;draw()};
+    r.oninput=()=>{p.role=r.value;draw()};
+    f.onchange=()=>{const file=f.files[0];if(!file){p.img=null;draw();return}
+      const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{p.img=im;draw()};im.src=rd.result};rd.readAsDataURL(file)};
+    d.querySelector('.x').onclick=()=>{people.splice(i,1);renderPeople();draw()};
+    box.appendChild(d);
+  });
+  $('add').style.display=people.length>=4?'none':'block';
+}
+$('add').onclick=()=>{if(people.length<4){people.push({name:'',role:'',img:null});renderPeople();draw()}};
+document.querySelectorAll('#presets .chip').forEach(b=>b.onclick=()=>applyPreset(b.dataset.p));
+[...TXT,'size','theme','decor','shape'].forEach(i=>$(i).addEventListener('input',draw));
+
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function wrapAll(t,w){const out=[];t.split('\n').forEach(par=>{let cur='';par.split(/\s+/).filter(Boolean).forEach(wd=>{const x=cur?cur+' '+wd:wd;if(ctx.measureText(x).width>w&&cur){out.push(cur);cur=wd}else cur=x});if(cur)out.push(cur)});return out}
+function lim(a,n){if(a.length>n){a=a.slice(0,n);a[n-1]=a[n-1].replace(/\s*\S*$/,'')+'…'}return a}
+const val=id=>$(id).value.trim();
+
+function shapePath(cx,cy,r){
+  if($('shape').value==='circle'){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2)}
+  else rr(cx-r,cy-r,2*r,2*r,r*.3);
+}
+function drawPeople(bx,by,bw,bh,T,wide){
+  const n=people.length,cols=wide?Math.min(n,2):n,rows=Math.ceil(n/cols),sw=bw/cols,sh=bh/rows;
+  people.forEach((p,i)=>{
+    const row=Math.floor(i/cols),col=i%cols,inRow=row===rows-1?n-row*cols:cols;
+    const cx=bx+(cols-inRow)*sw/2+col*sw+sw/2;
+    const r=Math.max(44,Math.min(sw/2-28,(sh-120)/2,wide?210:190));
+    const top=by+row*sh+(sh-(2*r+108))/2,cy=top+r;
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=30;ctx.shadowOffsetY=10;
+    shapePath(cx,cy,r+11);ctx.fillStyle=T.gold;ctx.fill();ctx.restore();
+    ctx.save();shapePath(cx,cy,r+3);ctx.fillStyle=T.a;ctx.fill();ctx.restore();
+    ctx.save();shapePath(cx,cy,r);ctx.clip();
+    if(p.img){const s=Math.max(2*r/p.img.width,2*r/p.img.height),w=p.img.width*s,h=p.img.height*s;ctx.drawImage(p.img,cx-w/2,cy-h/2,w,h)}
+    else{ctx.fillStyle=T.panel;ctx.fillRect(cx-r,cy-r,2*r,2*r);ctx.fillStyle=T.text;ctx.font=`700 ${r}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((p.name.trim()[0]||'?').toUpperCase(),cx,cy+r*.05);ctx.textBaseline='alphabetic'}
+    ctx.restore();
+    ctx.textAlign='center';ctx.fillStyle=T.text;
+    let s=wide?36:38;ctx.font=`700 ${s}px ${FONT}`;
+    while(ctx.measureText(p.name).width>sw-24&&s>20){s--;ctx.font=`700 ${s}px ${FONT}`}
+    ctx.fillText(p.name,cx,top+2*r+46);
+    if(p.role){let q=24;ctx.font=`500 ${q}px ${FONT}`;ctx.fillStyle=T.gold;
+      while(ctx.measureText(p.role).width>sw-24&&q>16){q--;ctx.font=`500 ${q}px ${FONT}`}
+      ctx.fillText(p.role,cx,top+2*r+82)}
+  });
+}
+
+function draw(){
+  const [W,H]=SIZES[$('size').value];
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}
+  const T=THEMES[$('theme').value],wide=W>H,n=people.length,mn=Math.min(W,H);
+  ctx.clearRect(0,0,W,H);ctx.letterSpacing='0px';
+  // background
+  const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,T.a);g.addColorStop(1,T.b);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const gl=ctx.createRadialGradient(W/2,H*.45,0,W/2,H*.45,mn*.85);gl.addColorStop(0,T.glow);gl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=gl;ctx.fillRect(0,0,W,H);
+  // decoration
+  const dc=$('decor').value;
+  if(dc==='bubbles'){ctx.fillStyle=T.deco;[[.06,.08,.2],[.97,.22,.26],[.92,.97,.3],[.03,.88,.18],[.5,1.02,.2]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x*W,y*H,r*mn,0,7);ctx.fill()})}
+  if(dc==='confetti'){
+    const cols=[T.gold,T.text,'#ff8fa3','#7dd3fc','#a7f3d0'];let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+    for(let i=0;i<110;i++){
+      const top=i%2===0,x=60+rnd()*(W-120),y=top?50+rnd()*H*.17:H*.9+rnd()*(H*.08-10);
+      ctx.save();ctx.translate(x,y);ctx.rotate(rnd()*6.3);ctx.globalAlpha=.85;ctx.fillStyle=cols[i%5];
+      if(i%3===0){ctx.beginPath();ctx.arc(0,0,5,0,7);ctx.fill()}else ctx.fillRect(-7,-3.5,14,7);ctx.restore();
+    }
+  }
+  ctx.strokeStyle=T.gold;ctx.globalAlpha=.55;ctx.lineWidth=3;ctx.strokeRect(26,26,W-52,H-52);
+  ctx.globalAlpha=.25;ctx.strokeRect(38,38,W-76,H-76);ctx.globalAlpha=1;
+
+  // layout columns
+  let colX=W/2,colW=W-170;
+  if(wide){ if(n>0){colX=W*.71;colW=W*.5}else colW=W*.7 }
+  const top=[],bot=[];
+  const blk=(g,h,f)=>g.push({h,f});
+  ctx.textAlign='center';
+
+  const label=val('label');
+  if(label){const t=label.toUpperCase();ctx.font=`700 30px ${FONT}`;ctx.letterSpacing='5px';
+    const w=Math.min(ctx.measureText(t).width+90,colW);ctx.letterSpacing='0px';
+    blk(top,102,y=>{ctx.fillStyle=T.gold;rr(colX-w/2,y,w,62,31);ctx.fill();ctx.fillStyle=T.pill;ctx.font=`700 30px ${FONT}`;ctx.letterSpacing='5px';ctx.textAlign='center';ctx.fillText(t,colX+2,y+42,w-24);ctx.letterSpacing='0px'})}
+
+  const hd=val('headline');
+  if(hd){let fs=wide?92:104,L;for(;fs>44;fs-=4){ctx.font=`800 ${fs}px ${FONT}`;L=wrapAll(hd,colW);if(L.length<=2)break}
+    fs=Math.max(fs,44);ctx.font=`800 ${fs}px ${FONT}`;L=lim(wrapAll(hd,colW),3);const lh=fs*1.12;
+    blk(top,L.length*lh+52,y=>{ctx.fillStyle=T.text;ctx.font=`800 ${fs}px ${FONT}`;ctx.textAlign='center';
+      L.forEach((l,i)=>ctx.fillText(l,colX,y+fs*.88+i*lh));
+      ctx.fillStyle=T.gold;rr(colX-60,y+L.length*lh+12,120,7,4);ctx.fill()})}
+
+  const ti=val('title');
+  if(ti){const fz=wide?32:34;ctx.font=`italic 600 ${fz}px ${FONT}`;const L=lim(wrapAll(ti,colW-80),3),lh=fz*1.35;
+    blk(bot,L.length*lh+66,y=>{ctx.fillStyle=T.panel;rr(colX-colW/2,y,colW,L.length*lh+34,20);ctx.fill();
+      ctx.fillStyle=T.text;ctx.font=`italic 600 ${fz}px ${FONT}`;ctx.textAlign='center';
+      L.forEach((l,i)=>ctx.fillText(l,colX,y+fz+14+i*lh))})}
+
+  const sub=val('sub');
+  if(sub){ctx.font=`700 34px ${FONT}`;const L=lim(wrapAll(sub,colW),2);
+    blk(bot,L.length*46+22,y=>{ctx.fillStyle=T.gold;ctx.font=`700 34px ${FONT}`;ctx.textAlign='center';L.forEach((l,i)=>ctx.fillText(l,colX,y+36+i*46))})}
+
+  const dt=[val('date')?'📅 '+val('date'):'',val('time')?'🕒 '+val('time'):''].filter(Boolean).join('     ');
+  ctx.font=`600 32px ${FONT}`;
+  const ml=[];if(dt)ml.push(dt);if(val('venue'))lim(wrapAll('📍 '+val('venue'),colW),2).forEach(l=>ml.push(l));
+  if(ml.length)blk(bot,ml.length*46+18,y=>{ctx.fillStyle=T.text;ctx.font=`600 32px ${FONT}`;ctx.textAlign='center';ml.forEach((l,i)=>ctx.fillText(l,colX,y+34+i*46,colW))});
+
+  const fl=[val('extra'),val('org')].filter(Boolean);
+  if(fl.length)blk(bot,fl.length*40+34,y=>{ctx.textAlign='center';
+    ctx.globalAlpha=.5;ctx.fillStyle=T.gold;ctx.fillRect(colX-70,y+6,140,2);ctx.globalAlpha=1;
+    fl.forEach((l,i)=>{ctx.fillStyle=T.text;ctx.font=(fl.length===2&&i===0?'700 28px ':'500 26px ')+FONT;ctx.fillText(l,colX,y+50+i*40,colW)})});
+
+  const sum=a=>a.reduce((s,b)=>s+b.h,0),run=(a,y)=>a.forEach(b=>{b.f(y);y+=b.h});
+  if(wide||n===0){
+    const all=[...top,...bot];let y=(H-sum(all))/2;run(all,y);
+    if(wide&&n>0)drawPeople(60,70,W*.43,H-140,T,true);
+  }else{
+    const tT=sum(top),tB=sum(bot),y0=96,yB=H-82-tB;
+    run(top,y0);run(bot,yB);
+    drawPeople(70,y0+tT,W-140,yB-(y0+tT),T,false);
+  }
+}
+$('dl').onclick=()=>cv.toBlob(b=>{
+  const a=document.createElement('a'),name=(val('headline')||'card').replace(/[^\w\u0980-\u09FF]+/g,'-').slice(0,40);
+  a.href=URL.createObjectURL(b);a.download=name+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)},'image/png');
+
+applyPreset('congrats');
+if(document.fonts)document.fonts.ready.then(draw);
+</script>
+</body>
+</html>
